@@ -4,7 +4,7 @@
 
 TokenBar is a native macOS menu-bar app for Volcengine Ark Coding/Agent Plan, OpenCode Go, DeepSeek, APINebula relay, Z.ai (Zhipu GLM), Kimi For Coding, GrokPool gateway, LongCat (longcat.chat), Alibaba Cloud (百炼) Coding Plan / Token Plan, StepFun Step Plan, and SenseNova Token Plan usage — and it nags you when a subscription is about to expire with quota left. It keeps the quota you have **left** visible without a Dock icon.
 
-> The repository is named `ArkBar`; the user-facing product, Swift package, executable, and `.app` bundle are all named `TokenBar`. The current source and local-package version is `0.1.0` (Unreleased). As of September 1, 2026, the remote repository has no Git tag or GitHub Release. The steps below are for source builds and local development packages only, not a published installer.
+> The repository is named `TokenBar` (<https://github.com/kewenjunqwer/TokenBar>); the user-facing product, Swift package, executable, and `.app` bundle are all named `TokenBar`. This repository is derived from `youwei792/ArkBar` under the same MIT license, with the original authorship retained. The current source and local-package version is `0.1.0` (Unreleased). The remote repository has no Git tag or GitHub Release. The steps below are for source builds and local development packages only, not a published installer.
 
 ## Highlights
 
@@ -34,8 +34,8 @@ TokenBar is a native macOS menu-bar app for Volcengine Ark Coding/Agent Plan, Op
 Requirements: macOS 14+, Swift 6.0, and one supported authentication source.
 
 ```bash
-git clone https://github.com/youwei792/ArkBar.git
-cd ArkBar
+git clone https://github.com/kewenjunqwer/TokenBar.git
+cd TokenBar
 swift build
 .build/debug/TokenBar
 ```

@@ -4,7 +4,7 @@
 
 TokenBar 是一款原生 macOS 菜单栏应用，用于查看火山方舟 Coding/Agent Plan、OpenCode Go、DeepSeek、APINebula 中转站、智谱（Z.ai）、Kimi For Coding、GrokPool 网关、LongCat (longcat.chat)、阿里云百炼 Coding Plan / Token Plan、阶跃星辰 Step Plan、商汤日日新 Token Plan、MiniMax (M Plan / Token Plan) 与小米 MiMo Token Plan 的用量，并在订阅快到期且额度没用完时提醒你；不会显示 Dock 图标。
 
-> 仓库名为 `ArkBar`；面向用户的产品、Swift Package、可执行文件与 `.app` 名称均为 `TokenBar`。当前源码与本地打包版本号为 `0.1.0`（Unreleased）；截至 2026-09-01，远端没有 Git tag 或 GitHub Release。下述步骤仅用于从源码运行或本地开发打包，不代表已有正式发布安装包。
+> 仓库名为 `TokenBar`（<https://github.com/kewenjunqwer/TokenBar>），面向用户的产品、Swift Package、可执行文件与 `.app` 名称均为 `TokenBar`。本仓库源自 `youwei792/ArkBar`，沿用其 MIT 许可并保留原作者署名。当前源码与本地打包版本号为 `0.1.0`（Unreleased）；远端没有 Git tag 或 GitHub Release。下述步骤仅用于从源码运行或本地开发打包，不代表已有正式发布安装包。
 
 ## 特性
 
@@ -35,8 +35,8 @@ TokenBar 是一款原生 macOS 菜单栏应用，用于查看火山方舟 Coding
 要求：macOS 14+、Swift 6.0，以及任一受支持的数据源。
 
 ```bash
-git clone https://github.com/youwei792/ArkBar.git
-cd ArkBar
+git clone https://github.com/kewenjunqwer/TokenBar.git
+cd TokenBar
 swift build
 .build/debug/TokenBar
 ```
