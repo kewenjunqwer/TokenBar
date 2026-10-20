@@ -163,6 +163,8 @@ struct PlanSnapshot: Sendable, Equatable, Identifiable {
         case aliyunTokenPlan = "aliyun-token-plan"
         case stepfunCodingPlan = "stepfun-coding-plan"
         case senseNovaCodingPlan = "sensenova-coding-plan"
+        case miniMax = "minimax"
+        case miMo = "mimo"
 
         var displayName: String {
             L10n.shared.productName(self)
@@ -173,7 +175,8 @@ struct PlanSnapshot: Sendable, Equatable, Identifiable {
             switch self {
             case .codingPlanTeam, .agentPlanTeam: true
             case .codingPlan, .agentPlan, .openCodeGo, .deepseek, .nebula, .grokPool, .longcat,
-                 .aliyunCodingPlan, .aliyunTokenPlan, .stepfunCodingPlan, .senseNovaCodingPlan: false
+                 .aliyunCodingPlan, .aliyunTokenPlan, .stepfunCodingPlan, .senseNovaCodingPlan,
+                 .miniMax, .miMo: false
             }
         }
     }
@@ -316,6 +319,10 @@ enum UsageError: LocalizedError, Sendable {
     case senseNovaMissingCredentials
     case senseNovaInvalidSession
     case senseNovaNotSupported
+    case miniMaxMissingCredentials
+    case miniMaxInvalidToken
+    case miMoMissingCredentials
+    case miMoInvalidSession
     case insecureEndpoint(url: String)
 
     var errorDescription: String? {
@@ -392,6 +399,14 @@ enum UsageError: LocalizedError, Sendable {
             L(.errorSenseNovaInvalidSession)
         case .senseNovaNotSupported:
             L(.errorSenseNovaNotSupported)
+        case .miniMaxMissingCredentials:
+            L(.errorMiniMaxMissingCredentials)
+        case .miniMaxInvalidToken:
+            L(.errorMiniMaxInvalidToken)
+        case .miMoMissingCredentials:
+            L(.errorMiMoMissingCredentials)
+        case .miMoInvalidSession:
+            L(.errorMiMoInvalidSession)
         case let .insecureEndpoint(url):
             String(format: L(.errorInsecureEndpoint), url)
         }

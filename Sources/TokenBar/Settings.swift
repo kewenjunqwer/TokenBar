@@ -163,6 +163,12 @@ final class AppSettings: ObservableObject {
     @Published var showSenseNova: Bool {
         didSet { UserDefaults.standard.set(showSenseNova, forKey: Keys.showSenseNova) }
     }
+    @Published var showMiniMax: Bool {
+        didSet { UserDefaults.standard.set(showMiniMax, forKey: Keys.showMiniMax) }
+    }
+    @Published var showMiMo: Bool {
+        didSet { UserDefaults.standard.set(showMiMo, forKey: Keys.showMiMo) }
+    }
     /// Master switch for the expiry-reminder feature (menu section + notifications).
     @Published var expiryReminderEnabled: Bool {
         didSet { UserDefaults.standard.set(expiryReminderEnabled, forKey: Keys.expiryReminderEnabled) }
@@ -212,6 +218,8 @@ final class AppSettings: ObservableObject {
         case .aliyun: showAliyun
         case .stepfun: showStepFun
         case .sensenova: showSenseNova
+        case .minimax: showMiniMax
+        case .mimo: showMiMo
         }
     }
 
@@ -223,7 +231,8 @@ final class AppSettings: ObservableObject {
         case .deepseek: deepseekValueDisplay == .balance
         case .nebula: nebulaValueDisplay == .balance
         case .grokPool: grokPoolValueDisplay == .balance
-        case .ark, .opencode, .zai, .kimi, .longcat, .aliyun, .stepfun, .sensenova: false
+        case .ark, .opencode, .zai, .kimi, .longcat, .aliyun, .stepfun, .sensenova,
+             .minimax, .mimo: false
         }
     }
 
@@ -242,6 +251,8 @@ final class AppSettings: ObservableObject {
         case .aliyun: showAliyun = visible
         case .stepfun: showStepFun = visible
         case .sensenova: showSenseNova = visible
+        case .minimax: showMiniMax = visible
+        case .mimo: showMiMo = visible
         }
         if !visible, case .provider(tab) = selectedMenu {
             if showSummary {
@@ -356,6 +367,16 @@ final class AppSettings: ObservableObject {
     /// SenseNova API key (Keychain mirror; Bearer auth on the token gateway).
     @Published private(set) var senseNovaAPIKey: String
 
+    /// MiniMax (M Plan / Token Plan) API key (Keychain mirror). The quota
+    /// endpoint authenticates with the key itself, so this credential never
+    /// expires and never needs a browser sign-in.
+    @Published private(set) var miniMaxAPIKey: String
+
+    /// Xiaomi MiMo console session Cookie header (Keychain mirror). MiMo's
+    /// console API is cookie-only, so this is the browser session the
+    /// provider imports (or a manually pasted header).
+    @Published private(set) var miMoManualCookie: String
+
     /// Manual console Cookie headers (Keychain mirrors). Pasting the Cookie
     /// header from the browser's devtools once avoids the Full Disk Access /
     /// Keychain approvals the automatic browser import needs.
@@ -375,6 +396,8 @@ final class AppSettings: ObservableObject {
     var stepFunCookieHasValue: Bool { !stepFunCookie.isEmpty }
     var stepFunAPIKeyHasValue: Bool { !stepFunAPIKey.isEmpty }
     var senseNovaAPIKeyHasValue: Bool { !senseNovaAPIKey.isEmpty }
+    var miniMaxAPIKeyHasValue: Bool { !miniMaxAPIKey.isEmpty }
+    var miMoManualCookieHasValue: Bool { !miMoManualCookie.isEmpty }
 
     func setStepFunAPIKey(_ value: String?) {
         let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -421,6 +444,32 @@ final class AppSettings: ObservableObject {
 
     func loadSenseNovaFromKeychain() {
         senseNovaCookie = CookieKeychainStore.load(provider: "sensenova-browser") ?? ""
+    }
+
+    func setMiniMaxAPIKey(_ value: String?) {
+        let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = trimmed?.isEmpty == false ? trimmed : nil
+        let persisted = CookieKeychainStore.store(cookie: key, provider: "minimax-key")
+        miniMaxAPIKey = persisted
+            ? (key ?? "")
+            : (CookieKeychainStore.load(provider: "minimax-key") ?? "")
+    }
+
+    func loadMiniMaxFromKeychain() {
+        miniMaxAPIKey = CookieKeychainStore.load(provider: "minimax-key") ?? ""
+    }
+
+    func setMiMoManualCookie(_ value: String?) {
+        let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cookie = trimmed?.isEmpty == false ? trimmed : nil
+        let persisted = CookieKeychainStore.store(cookie: cookie, provider: "mimo-manual-cookie")
+        miMoManualCookie = persisted
+            ? (cookie ?? "")
+            : (CookieKeychainStore.load(provider: "mimo-manual-cookie") ?? "")
+    }
+
+    func loadMiMoFromKeychain() {
+        miMoManualCookie = CookieKeychainStore.load(provider: "mimo-manual-cookie") ?? ""
     }
 
     func setStepFunCookie(_ value: String?) {
@@ -660,6 +709,8 @@ final class AppSettings: ObservableObject {
         static let aliyunDetectedPlan = "tokenbar.aliyunDetectedPlan"
         static let showStepFun = "tokenbar.showStepFun"
         static let showSenseNova = "tokenbar.showSenseNova"
+        static let showMiniMax = "tokenbar.showMiniMax"
+        static let showMiMo = "tokenbar.showMiMo"
         static let expiryReminderEnabled = "tokenbar.expiryReminderEnabled"
         static let expiryReminderDays = "tokenbar.expiryReminderDays"
         static let expiryReminderNotify = "tokenbar.expiryReminderNotify"
@@ -711,6 +762,10 @@ final class AppSettings: ObservableObject {
         self.aliyunDetectedPlan = aliyunPlanRaw.flatMap(AliyunPlanKind.init(rawValue:))
         self.showStepFun = defaults.object(forKey: Keys.showStepFun) as? Bool ?? true
         self.showSenseNova = defaults.object(forKey: Keys.showSenseNova) as? Bool ?? true
+        self.showMiniMax = defaults.object(forKey: Keys.showMiniMax) as? Bool ?? true
+        self.showMiMo = defaults.object(forKey: Keys.showMiMo) as? Bool ?? true
+        self.miniMaxAPIKey = CookieKeychainStore.load(provider: "minimax-key") ?? ""
+        self.miMoManualCookie = CookieKeychainStore.load(provider: "mimo-manual-cookie") ?? ""
         self.stepFunCookie = CookieKeychainStore.load(provider: "stepfun-browser") ?? ""
         self.senseNovaCookie = CookieKeychainStore.load(provider: "sensenova-browser") ?? ""
         self.stepFunAPIKey = CookieKeychainStore.load(provider: "stepfun-apikey") ?? ""

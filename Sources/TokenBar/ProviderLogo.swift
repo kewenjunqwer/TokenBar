@@ -16,7 +16,8 @@ enum ProviderLogo {
         case .nebula:
             // Official site logo (PNG icon). Template so it adopts the menu tint.
             image = loadResource(named: "ProviderIcon-nebula", extension: "png")
-        case .ark, .opencode, .deepseek, .zai, .kimi, .grokPool, .longcat, .stepfun:
+        case .ark, .opencode, .deepseek, .zai, .kimi, .grokPool, .longcat, .stepfun,
+             .minimax, .mimo:
             image = loadResource(named: fileName(for: tab), extension: "svg")
         case .aliyun, .sensenova:
             image = loadResource(named: fileName(for: tab), extension: "png")
@@ -55,6 +56,8 @@ enum ProviderLogo {
         case .aliyun: "ProviderIcon-aliyun"
         case .stepfun: "ProviderIcon-stepfun"
         case .sensenova: "ProviderIcon-sensenova"
+        case .minimax: "ProviderIcon-minimax"
+        case .mimo: "ProviderIcon-mimo"
         }
     }
 

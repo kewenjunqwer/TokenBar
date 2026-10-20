@@ -120,6 +120,14 @@ enum MenuBuilder {
                 menu.addItem(actionItem(L(.openSenseNovaConsole), action: {
                     NSWorkspace.shared.open(URL(string: "https://platform.sensenova.cn/console")!)
                 }))
+            case .minimax:
+                menu.addItem(actionItem(L(.openMiniMaxConsole), action: {
+                    NSWorkspace.shared.open(MiniMaxProvider.consoleURL)
+                }))
+            case .mimo:
+                menu.addItem(actionItem(L(.openMiMoConsole), action: {
+                    NSWorkspace.shared.open(MiMoProvider.consoleURL)
+                }))
             }
         }
         menu.addItem(actionItem(L(.settings), action: state.onSettings))
@@ -215,6 +223,7 @@ enum MenuBuilder {
             selected: state.selectedMenu,
             showSummary: showSummary,
             width: cardWidth,
+            statuses: state.allStatuses,
             onSelect: { selection in
                 if case let .provider(tab) = selection {
                     state.onSelectTab(tab)
@@ -501,7 +510,8 @@ final class SummaryRowView: NSView {
         case .grokPool:
             guard let summary = snapshot.plans.first?.grokPool else { return nil }
             return GrokPoolCardView.money(summary.costUSD, symbol: "$")
-        case .ark, .opencode, .zai, .kimi, .longcat, .aliyun, .stepfun, .sensenova:
+        case .ark, .opencode, .zai, .kimi, .longcat, .aliyun, .stepfun, .sensenova,
+             .minimax, .mimo:
             return nil
         }
     }

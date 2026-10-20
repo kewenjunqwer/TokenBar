@@ -11,16 +11,18 @@ final class ProviderSwitcherView: NSView {
     private var providerButtons: [ProviderTab: NSButton] = [:]
 
     init(tabs: [ProviderTab], selected: MenuSelection, showSummary: Bool, width: CGFloat,
+         statuses: [ProviderTab: UsageStore.LoadStatus] = [:],
          onSelect: @escaping (MenuSelection) -> Void) {
         self.onSelect = onSelect
         super.init(frame: NSRect(x: 0, y: 0, width: width, height: 42))
         wantsLayer = true
-        build(tabs: tabs, selected: selected, showSummary: showSummary)
+        build(tabs: tabs, selected: selected, showSummary: showSummary, statuses: statuses)
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    private func build(tabs: [ProviderTab], selected: MenuSelection, showSummary: Bool) {
+    private func build(tabs: [ProviderTab], selected: MenuSelection, showSummary: Bool,
+                       statuses: [ProviderTab: UsageStore.LoadStatus]) {
         let inset: CGFloat = 12
         // Tighter gaps when crowded so labels keep more room.
         let countHint = tabs.count + (showSummary ? 1 : 0)
@@ -52,6 +54,10 @@ final class ProviderSwitcherView: NSView {
             } else if let tab = item as? ProviderTab {
                 let button = ProviderTabButton(frame: frame)
                 button.tab = tab
+                // A provider that is reporting usage is "lit"; one that is
+                // enabled but has no data (not configured, signed out, or
+                // stale) stays dimmed so the active plans stand out.
+                button.isActive = Self.isReporting(statuses[tab])
                 if let logo = ProviderLogo.image(for: tab) {
                     button.image = logo
                 }
@@ -64,6 +70,13 @@ final class ProviderSwitcherView: NSView {
                 providerButtons[tab] = button
             }
         }
+    }
+
+    /// True when the provider's last refresh succeeded — the "lit" state.
+    static func isReporting(_ status: UsageStore.LoadStatus?) -> Bool {
+        guard let status else { return false }
+        if case .ok = status { return true }
+        return false
     }
 
     @objc private func handleSummaryTap(_ sender: SummaryButton) {
@@ -197,6 +210,15 @@ private final class SummaryButton: NSButton {
 @MainActor
 private final class ProviderTabButton: NSButton {
     var tab: ProviderTab = .ark
+    /// True when the provider is currently reporting usage. Its logo is drawn
+    /// in the accent colour and the button gets a faint accent wash, so an
+    /// enabled plan reads as "on" while a broken or unconfigured one stays
+    /// dimmed.
+    var isActive: Bool = false {
+        didSet {
+            if oldValue != isActive { updateAppearance() }
+        }
+    }
     private let selectedGradient = CAGradientLayer()
     private var hoverTrackingArea: NSTrackingArea?
     private var isHovered = false
@@ -273,9 +295,15 @@ private final class ProviderTabButton: NSButton {
     private func updateAppearance(animated: Bool) {
         let selected = state == .on
         selectedGradient.isHidden = !selected
-        layer?.backgroundColor = selected
-            ? NSColor.clear.cgColor
-            : NSColor.quaternaryLabelColor.withAlphaComponent(isHovered ? 0.30 : 0.14).cgColor
+        let background: NSColor
+        if selected {
+            background = .clear
+        } else if isActive {
+            background = NSColor.controlAccentColor.withAlphaComponent(isHovered ? 0.28 : 0.16)
+        } else {
+            background = NSColor.quaternaryLabelColor.withAlphaComponent(isHovered ? 0.30 : 0.14)
+        }
+        layer?.backgroundColor = background.cgColor
         layer?.borderColor = selected
             ? NSColor.white.withAlphaComponent(0.24).cgColor
             : NSColor.separatorColor.withAlphaComponent(isHovered ? 0.64 : 0.36).cgColor
@@ -287,7 +315,13 @@ private final class ProviderTabButton: NSButton {
             ])
         if let img = image {
             img.isTemplate = true
-            contentTintColor = selected ? .white : .labelColor
+            if selected {
+                contentTintColor = .white
+            } else if isActive {
+                contentTintColor = .controlAccentColor
+            } else {
+                contentTintColor = .tertiaryLabelColor
+            }
         }
         let target = isHovered && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
             ? CATransform3DMakeScale(1.018, 1.018, 1)

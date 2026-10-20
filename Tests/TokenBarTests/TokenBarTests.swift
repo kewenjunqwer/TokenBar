@@ -552,10 +552,15 @@ struct IconRendererTests {
         #expect(icon.isTemplate == false)
     }
 
-    @Test("Logo-only icon stays a template image; logo+rings is full-colour")
+    @Test("Logo-only icon is full-colour so it can be lit; logo+rings is full-colour")
     func logoIcons() {
+        // The logo is baked in the accent colour instead of staying a template
+        // image, so a provider that is reporting usage can light up and a
+        // broken one can dim.
         let logo = IconRenderer.makeLogoIcon(tab: .deepseek)
-        #expect(logo.isTemplate == true)
+        #expect(logo.isTemplate == false)
+        let dimmed = IconRenderer.makeLogoIcon(tab: .deepseek, lit: false)
+        #expect(dimmed.isTemplate == false)
         let combo = IconRenderer.makeLogoAndRingIcon(
             tab: .deepseek,
             rings: [.init(id: "session", label: "Session", remainingPercent: 73, tone: .session)],
@@ -1264,7 +1269,7 @@ struct ProviderVisibilityTests {
     @Test("Hidden providers drop out of the switcher list")
     func visibleTabsFilters() {
         let settings = AppSettings.shared
-        let original = (settings.showArk, settings.showOpenCode, settings.showDeepSeek, settings.showNebula, settings.showZai, settings.showKimi, settings.showGrokPool, settings.showLongCat, settings.showAliyun, settings.showStepFun, settings.showSenseNova)
+        let original = (settings.showArk, settings.showOpenCode, settings.showDeepSeek, settings.showNebula, settings.showZai, settings.showKimi, settings.showGrokPool, settings.showLongCat, settings.showAliyun, settings.showStepFun, settings.showSenseNova, settings.showMiniMax, settings.showMiMo)
         defer {
             settings.showArk = original.0
             settings.showOpenCode = original.1
@@ -1277,6 +1282,8 @@ struct ProviderVisibilityTests {
             settings.showAliyun = original.8
             settings.showStepFun = original.9
             settings.showSenseNova = original.10
+            settings.showMiniMax = original.11
+            settings.showMiMo = original.12
         }
         settings.showArk = false
         settings.showOpenCode = true
@@ -1289,6 +1296,8 @@ struct ProviderVisibilityTests {
         settings.showAliyun = false
         settings.showStepFun = false
         settings.showSenseNova = false
+        settings.showMiniMax = false
+        settings.showMiMo = false
         #expect(settings.visibleTabs == [.opencode, .deepseek])
         #expect(settings.isVisible(.ark) == false)
         #expect(settings.isVisible(.grokPool) == false)
@@ -4702,5 +4711,138 @@ extension AliyunProviderFetchTests {
             }
         }
         #expect(transport.requests.count == 1)
+    }
+}
+
+@Suite("MiniMax token plan decode")
+struct MiniMaxDecodeTests {
+    /// Shape documented by MiniMax (M Plan / Token Plan FAQ) and mirrored in
+    /// the official CLI's quota fixture.
+    private let quotaJSON = #"""
+    {
+      "base_resp": { "status_code": 0, "status_msg": "success" },
+      "model_remains": [
+        {
+          "model_name": "MiniMax-M*",
+          "start_time": 1776355200000,
+          "end_time": 1776373200000,
+          "remains_time": 7151954,
+          "current_interval_total_count": 1500,
+          "current_interval_usage_count": 228,
+          "current_weekly_total_count": 0,
+          "current_weekly_usage_count": 0,
+          "current_weekly_remaining_percent": "99",
+          "weekly_start_time": 1776009600000,
+          "weekly_end_time": 1776614400000,
+          "weekly_remains_time": 248351954
+        }
+      ]
+    }
+    """#
+
+    @Test("parses the remaining quota of the 5-hour and weekly windows")
+    func parsesQuota() throws {
+        let payload = try MiniMaxProvider.parse(Data(quotaJSON.utf8))
+        #expect(payload.baseResp?.statusCode == 0)
+
+        let snapshot = try MiniMaxProvider.makeSnapshot(entries: payload.modelRemains ?? [])
+        let plan = try #require(snapshot.plans.first)
+        #expect(plan.product == .miniMax)
+        #expect(plan.windows.count == 2)
+
+        // `..._usage_count` holds the REMAINING count: 228 of 1500 left.
+        let interval = try #require(plan.windows.first { $0.label == "5-hour" })
+        #expect(interval.total == 1500)
+        #expect(interval.used == 1272)
+        #expect(abs(interval.usedPercent - 84.8) < 0.01)
+        #expect(abs(interval.remainingPercent - 15.2) < 0.01)
+        #expect(interval.resetsAt != nil)
+
+        // A window without a total falls back to the published percent.
+        let weekly = try #require(plan.windows.first { $0.label == "Weekly" })
+        #expect(weekly.used == nil)
+        #expect(abs(weekly.usedPercent - 1) < 0.01)
+    }
+
+    @Test("rejects a non-zero base_resp code")
+    func rejectsErrorEnvelope() throws {
+        let json = #"{"base_resp":{"status_code":1004,"status_msg":"login fail"}}"#
+        let payload = try MiniMaxProvider.parse(Data(json.utf8))
+        #expect(payload.baseResp?.statusCode == 1004)
+        #expect(payload.modelRemains == nil)
+    }
+
+    @Test("clamps a percent-only window into 0…100")
+    func clampsPercent() {
+        let window = MiniMaxProvider.window(
+            total: nil, remaining: nil, remainingPercent: 96, label: "5-hour", resetsAt: nil)
+        #expect(window?.usedPercent == 4)
+        #expect(window?.remainingPercent == 96)
+    }
+}
+
+@Suite("Xiaomi MiMo token plan decode")
+struct MiMoDecodeTests {
+    private let usageJSON = #"""
+    {
+      "code": 0,
+      "message": "",
+      "data": {
+        "monthUsage": {
+          "percent": 0.0505,
+          "items": [
+            { "name": "month_total_token", "used": 10100158, "limit": 200000000, "percent": 0.0505 }
+          ]
+        }
+      }
+    }
+    """#
+
+    private let detailJSON = #"""
+    {
+      "code": 0,
+      "message": "",
+      "data": { "planCode": "standard", "currentPeriodEnd": "2026-05-04 23:59:59", "expired": false }
+    }
+    """#
+
+    @Test("parses the monthly token pool")
+    func parsesUsage() throws {
+        let usage = try MiMoProvider.parseUsage(Data(usageJSON.utf8))
+        #expect(abs(usage.usedFraction - 0.0505) < 0.0001)
+        #expect(usage.used == 10100158)
+        #expect(usage.total == 200000000)
+    }
+
+    @Test("parses the plan code and the period end")
+    func parsesDetail() throws {
+        let detail = try MiMoProvider.parseDetail(Data(detailJSON.utf8))
+        #expect(detail.planCode == "standard")
+        #expect(detail.expired == false)
+        #expect(detail.currentPeriodEnd != nil)
+    }
+
+    @Test("builds a monthly window with the period end as the reset time")
+    func buildsSnapshot() throws {
+        let usage = try MiMoProvider.parseUsage(Data(usageJSON.utf8))
+        let detail = try MiMoProvider.parseDetail(Data(detailJSON.utf8))
+        let snapshot = MiMoProvider.makeSnapshot(
+            usage: usage, planCode: detail.planCode, periodEnd: detail.currentPeriodEnd)
+        let plan = try #require(snapshot.plans.first)
+        #expect(plan.product == .miMo)
+        #expect(plan.edition == "Standard")
+        let window = try #require(plan.windows.first)
+        #expect(window.label == "Monthly")
+        #expect(abs(window.usedPercent - 5.05) < 0.01)
+        #expect(window.total == 200000000)
+        #expect(window.resetsAt != nil)
+    }
+
+    @Test("only a header with the console session cookies counts as signed in")
+    func detectsSessionCookie() {
+        #expect(MiMoBrowserSession.hasSessionCookie(
+            "api-platform_serviceToken=abc; userId=42; api-platform_ph=x"))
+        #expect(!MiMoBrowserSession.hasSessionCookie("api-platform_ph=x; cookie-preferences=y"))
+        #expect(!MiMoBrowserSession.hasSessionCookie(""))
     }
 }

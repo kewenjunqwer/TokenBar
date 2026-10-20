@@ -87,14 +87,42 @@ echo "=== Codesign ==="
 # browser-cookie Keychain grants the user approved — the app would need
 # re-authorization after every rebuild. A stable identity keeps those grants.
 SIGN_IDENTITY="${TOKENBAR_SIGN_IDENTITY:-Apple Development: 1751121595@qq.com (CBDAK7YPZ4)}"
-if security find-identity -v -p codesigning 2>/dev/null | grep -q "$SIGN_IDENTITY"; then
-    echo "Signing with: $SIGN_IDENTITY"
+# `codesign` matches the identity string byte-for-byte, and an identity name
+# with non-ASCII characters fails to match in a non-UTF-8 shell ("unknown
+# exception"). Signing with the SHA-1 fingerprint avoids that entirely, so the
+# identity is resolved to its fingerprint first.
+IDENTITIES="$(security find-identity -v -p codesigning 2>/dev/null || true)"
+
+resolve_fingerprint() {
+    local wanted="$1"
+    if [[ "$wanted" =~ ^[0-9A-Fa-f]{40}$ ]]; then
+        echo "$wanted"
+        return
+    fi
+    # `security find-identity` prints "  1) <SHA1> \"<name>\"", so the
+    # fingerprint is the only 40-hex token on the line.
+    echo "$IDENTITIES" | grep -F "$wanted" | grep -oE '[0-9A-F]{40}' | head -1
+}
+
+RESOLVED_IDENTITY="$(resolve_fingerprint "$SIGN_IDENTITY")"
+if [[ -z "$RESOLVED_IDENTITY" ]]; then
+    # The requested identity is not on this machine, but another stable
+    # identity may be. Using it still keeps the signature stable across
+    # rebuilds, which is the whole point of not signing ad-hoc.
+    RESOLVED_IDENTITY="$(echo "$IDENTITIES" | grep -oE '[0-9A-F]{40}' | head -1)"
+    if [[ -n "$RESOLVED_IDENTITY" ]]; then
+        echo "Requested identity '$SIGN_IDENTITY' not found; using $RESOLVED_IDENTITY instead."
+    fi
+fi
+
+if [[ -n "$RESOLVED_IDENTITY" ]]; then
+    echo "Signing with: $RESOLVED_IDENTITY"
     # No silent ad-hoc fallback: an ad-hoc signature changes on every build and
     # silently revokes the Full Disk Access and browser-cookie Keychain grants
     # the user already approved. If the chosen identity fails, stop.
-    codesign --force --deep --sign "$SIGN_IDENTITY" "$APP_DST"
+    codesign --force --deep --sign "$RESOLVED_IDENTITY" "$APP_DST"
 else
-    echo "No stable identity '$SIGN_IDENTITY' found; signing ad-hoc."
+    echo "No stable identity found; signing ad-hoc."
     echo "NOTE: ad-hoc signatures change every build, so Full Disk Access and"
     echo "      browser-cookie Keychain grants must be re-approved after a rebuild."
     echo "TIP: create a codesigning identity and pass TOKENBAR_SIGN_IDENTITY."

@@ -54,13 +54,18 @@ enum IconRenderer {
     }
 
     /// Just the provider logo, centered in the 18×18 canvas.
+    ///
+    /// A provider that is currently reporting usage draws its logo in the
+    /// accent colour ("lit"); one without fresh data — not configured, signed
+    /// out, or stale — draws it dimmed, so enabling a plan is visible in the
+    /// menu bar at a glance.
     @MainActor
-    static func makeLogoIcon(tab: ProviderTab) -> NSImage {
+    static func makeLogoIcon(tab: ProviderTab, lit: Bool = true) -> NSImage {
         let outputSize = NSSize(width: 18, height: 18)
-        return bakedImage(size: outputSize, template: true) { rect in
+        return bakedImage(size: outputSize, template: false) { rect in
             if let logo = ProviderLogo.image(for: tab) {
                 let side: CGFloat = 16
-                logo.draw(
+                tintedLogo(logo, lit: lit).draw(
                     in: NSRect(x: rect.midX - side / 2, y: rect.midY - side / 2,
                                width: side, height: side),
                     from: .zero,
@@ -71,14 +76,14 @@ enum IconRenderer {
     }
 
     /// Logo on the left plus the ring gauge on the right. The logo is tinted
-    /// with the label colour at bake time so it stays legible in both menu-bar
+    /// with the accent colour at bake time so it stays legible in both menu-bar
     /// appearances; the rings keep their card hues.
     @MainActor
     static func makeLogoAndRingIcon(tab: ProviderTab, rings: [RingRenderer.Ring], stale: Bool) -> NSImage {
         let size = NSSize(width: 36, height: 18)
         return bakedImage(size: size, template: false) { _ in
             if let logo = ProviderLogo.image(for: tab) {
-                tintedLogo(logo).draw(
+                tintedLogo(logo, lit: !stale).draw(
                     in: NSRect(x: 0, y: 1, width: 16, height: 16),
                     from: .zero,
                     operation: .sourceOver,
@@ -95,10 +100,12 @@ enum IconRenderer {
 
     /// A template logo re-coloured with the current label colour, so it stays
     /// legible on both light and dark menu bars once baked into a colour image.
-    private static func tintedLogo(_ logo: NSImage) -> NSImage {
+    /// `lit` switches the colour to the accent, which is what marks a provider
+    /// that is actually reporting usage.
+    private static func tintedLogo(_ logo: NSImage, lit: Bool) -> NSImage {
         let size = NSSize(width: 16, height: 16)
         return NSImage(size: size, flipped: false) { rect in
-            NSColor.labelColor.setFill()
+            (lit ? NSColor.controlAccentColor : NSColor.tertiaryLabelColor).setFill()
             rect.fill()
             logo.draw(in: rect, from: .zero, operation: .destinationIn, fraction: 1)
             return true

@@ -2,7 +2,7 @@
 
 [English](README.en.md) · [安全报告](SECURITY.md) · [更新日志](CHANGELOG.md)
 
-TokenBar 是一款原生 macOS 菜单栏应用，用于查看火山方舟 Coding/Agent Plan、OpenCode Go、DeepSeek、APINebula 中转站、智谱（Z.ai）、Kimi For Coding、GrokPool 网关、LongCat (longcat.chat)、阿里云百炼 Coding Plan / Token Plan、阶跃星辰 Step Plan 与商汤日日新 Token Plan 的用量，并在订阅快到期且额度没用完时提醒你；不会显示 Dock 图标。
+TokenBar 是一款原生 macOS 菜单栏应用，用于查看火山方舟 Coding/Agent Plan、OpenCode Go、DeepSeek、APINebula 中转站、智谱（Z.ai）、Kimi For Coding、GrokPool 网关、LongCat (longcat.chat)、阿里云百炼 Coding Plan / Token Plan、阶跃星辰 Step Plan、商汤日日新 Token Plan、MiniMax (M Plan / Token Plan) 与小米 MiMo Token Plan 的用量，并在订阅快到期且额度没用完时提醒你；不会显示 Dock 图标。
 
 > 仓库名为 `ArkBar`；面向用户的产品、Swift Package、可执行文件与 `.app` 名称均为 `TokenBar`。当前源码与本地打包版本号为 `0.1.0`（Unreleased）；截至 2026-09-01，远端没有 Git tag 或 GitHub Release。下述步骤仅用于从源码运行或本地开发打包，不代表已有正式发布安装包。
 
@@ -18,11 +18,12 @@ TokenBar 是一款原生 macOS 菜单栏应用，用于查看火山方舟 Coding
 - APINebula 余额与日志是控制台接口：凭据来自浏览器登录会话（设置页显式导入并缓存到 Keychain），可选 API Key 兜底。
 - GrokPool（grok2api 管理员网关）监控：以管理员账号登录（`POST /api/admin/v1/auth/login`）换取短期访问令牌，读取 **24h 运营看板**（`GET /api/admin/v1/dashboard?period=24h`）：请求数/成功率、计费费用、输入/缓存/输出/推理 token、活跃账号数与常用模型。成功率圆环 = 成功请求占比；与 APINebula 标签页完全隔离（独立设置与状态）。计费按 grok2api 的 10^10 ticks = $1 换算。
 - LongCat (longcat.chat) 监控：用量接口在 longcat.chat 控制台（非 api.longcat.chat），以浏览器登录会话认证。剩余额度圆环 = 当前 token pack 的剩余 Token 占比；环右侧展示总额/已用/已用百分比与剩余/剩余百分比，以及可选的 fuel pack 余额与最近过期倒计时。
-- 支持在 Ark、OpenCode Go、DeepSeek、APINebula、智谱（Z.ai）、Kimi、GrokPool、LongCat、阿里云、阶跃与商汤之间即时切换，并隔离各边的刷新状态与错误。
+- 支持在 Ark、OpenCode Go、DeepSeek、APINebula、智谱（Z.ai）、Kimi、GrokPool、LongCat、阿里云、阶跃、商汤、MiniMax 与小米 MiMo 之间即时切换，并隔离各边的刷新状态与错误。
 - **订阅到期提醒**：概览菜单顶部列出即将到期的订阅（已接入套餐自动读取验证过的到期时间，也可手动添加未接入的订阅），按剩余天数着色；距到期不超过提前天数（可选 3/7/14/30 天，默认 7 天）且剩余额度 ≥50% 时才提醒"抓紧用完"，额度基本用完的订阅不再打扰。可选系统通知（每个订阅每天最多一条；需打包后的 App 运行才显示，源码运行时以下拉菜单为准）。在「设置 → 订阅提醒」管理开关、提前天数与手动订阅列表。
 - **概览**标签一览所有可见 Provider 的剩余百分比与胶囊进度条；点击某行进入对应完整卡片。可在「设置 → 通用」开关。
 - 每个 Provider 可在自己的设置页中独立**显示/隐藏**，隐藏后从切换器移除并停止后台刷新。
-- 菜单栏样式可选：圆环、圆环 + 百分比、仅百分比、仅 Logo、Logo + 百分比、Logo + 圆环；Logo 16pt、百分比使用系统字号。圆环与卡片同源：三窗口套餐显示每月（外）/ 每周（中）/ 5 小时（内）三环同心，余额类单窗口 Provider 显示单环。
+- 菜单栏样式可选：圆环、圆环 + 百分比、仅百分比、仅 Logo、Logo + 百分比、Logo + 圆环；Logo 16pt、百分比使用系统字号。
+- **开启的套餐会“点亮”**：切换器里正在上报用量的套餐图标用强调色点亮并带一层淡色底，未配置/已掉线/数据过期的套餐图标变暗；菜单栏的 Logo 模式同理——数据正常时 Logo 为强调色，一旦刷新失败立刻变暗，一眼看出哪个套餐是活的。圆环与卡片同源：三窗口套餐显示每月（外）/ 每周（中）/ 5 小时（内）三环同心，余额类单窗口 Provider 显示单环。
 - DeepSeek 与 APINebula 可在各自设置页选择菜单栏显示「剩余百分比」还是「余额（含货币符号）」：DeepSeek 按接口返回的币种显示 `¥`（CNY）或 `$`（USD），APINebula 固定人民币 `¥`，均保留两位小数；GrokPool 在「成功率百分比」与「24h 费用（`$`）」之间选择。余额/费用模式下状态栏自动加宽以容纳金额。
 - 支持跟随系统、简体中文和 English。
 - 不含遥测；OpenCode/APINebula 浏览器接入只在用户明确操作时读取认证 Cookie。会话与 API Key 写入本机 Keychain，并镜像到应用支持目录下的凭据文件缓存，常规重启不弹钥匙串。
@@ -83,6 +84,8 @@ lipo -archs TokenBar
 | 阿里云百炼 Coding Plan / Token Plan | 在“设置 → 阿里云百炼”点**浏览器登录**（推荐，无需 AK/SK）：浏览器打开百炼控制台登录页，登录成功后自动返回；也可填阿里云 AK/SK 或 sk-sp- 套餐 Key（均存 Keychain + 文件缓存；AK/SK 建议只读 RAM 子账号，需 `modelstudio:GenerateCLIAccessToken` 权限）。环境变量兜底：`ALIYUN_ACCESS_KEY_ID` / `ALIYUN_ACCESS_KEY_SECRET`、`ALIYUN_CODING_PLAN_API_KEY` | 阿里云未公开用量 API：TokenBar 用与官方 `bl` CLI 完全相同的控制台网关读取用量——浏览器登录直接获取 console 访问令牌（与 `bl auth login --console` 同一机制，本地起端口接收回调，令牌存 Keychain）；AK/SK 则用 ACS3 签名兑换令牌（内存缓存约 10 分钟、401 自动重换）。自动识别账号持有哪种套餐：**Token Plan**（积分制）显示 5 小时 / 每周 / 每月已用比例环（个人版 Essential 实测只发布月度一档，缺哪档就不显示哪档）；**Coding Plan**（请求数制）显示 5 小时 6,000 / 每周 45,000 / 每月 90,000 三档绝对值环。识别结果记住后每次刷新只查该套餐的接口（Token Plan 另查一次订阅记录，用来显示到期日与套餐档位；两者都是不耗额度的元数据接口）。**浏览器登录拿到的 console 令牌寿命只有几分钟**，过期后需要重新点一次；配了 AK/SK 则由 app 自动重新换票，无需人工干预。 |
 | 阶跃 StepFun | 在“设置 → 阶跃 Step Plan”点“重新读取浏览器登录”导入控制台会话（cookie 鉴权，自动轮换；需授予完全磁盘访问权限） | 控制台 Connect-RPC：`RefreshToken` 轮换会话后查 `QueryStepPlanRateLimit` + `GetStepPlanStatus`。Plus 套餐仅月度 Credit 一个环（剩余 79% 类）+ 到期徽标；带 5 小时/周窗口的套餐会自动显示三环。API Key 无法读取套餐额度（厂商限制）。 |
 | 商汤日日新 | 在“设置 → 商汤 Token Plan”点“重新读取浏览器登录”导入控制台会话（需授予完全磁盘访问权限） | Token Plan 公测免费（双积分池：通用 + Flash-Lite，各含周余额/5h 窗口/周额度）。控制台 `pool-usage` 接口只接受 SPA 的 OAuth Bearer，因此导入会话后会以 Hydra authorization-code + PKCE 无头换取访问令牌并用 refresh token 自动续期（访问令牌 3 小时有效）。每个积分池各自成环。 |
+| MiniMax（M Plan / Token Plan） | 在“设置 → MiniMax Token Plan”填写套餐 API Key（存 Keychain）；可选环境变量 `MINIMAX_API_KEY` 兜底 | 官方接口 `GET {host}/v1/token_plan/remains`（`Authorization: Bearer <API Key>`）直接返回 5 小时与每周的剩余额度；凭据长期有效，**不会过期、不需要反复登录**。厂商把中国域名从 `minimaxi.com` 迁到 `minimax.cn`，App 会自动在候选域名间探测并记住可用域名。 |
+| 小米 MiMo Token Plan | 在“设置 → 小米 MiMo Token Plan”点“重新读取浏览器登录”导入控制台会话（需授予完全磁盘访问权限）；也可粘贴 Cookie | 小米只对已登录的控制台开放额度，官方没有配额 API，接口为 `platform.xiaomimimo.com/api/v1/tokenPlan/usage` + `/tokenPlan/detail`（按月 Credits 配额 + 周期结束时间）。控制台 Cookie 有效期只有 24 小时，App 会在会话失效时**自动从浏览器续期**（此前已导入过一次，不会再弹权限），只有浏览器本身掉线才需要重新登录。 |
 
 Ark CLI 的最新安装方式请以官方 [Ark CLI 文档](https://github.com/volcengine/ark-cli) 为准。
 

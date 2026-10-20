@@ -136,6 +136,8 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             settings.$showAliyun.map { _ in },
             settings.$showStepFun.map { _ in },
             settings.$showSenseNova.map { _ in },
+            settings.$showMiniMax.map { _ in },
+            settings.$showMiMo.map { _ in },
             settings.$showSummary.map { _ in })
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
@@ -200,6 +202,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         }
         guard let button = statusItem.button else { return }
         let tab = explicitTab ?? iconTab()
+        // A provider counts as "lit" only while its last refresh succeeded, so
+        // the logo dims as soon as the data goes stale or the fetch fails.
+        let isLive: Bool
+        if case .ok = effectiveStatus { isLive = true } else { isLive = false }
         let showBalance = settings.showsBalanceInStatusBar(tab)
         let valueText = statusValueText(
             for: effectiveStatus, tab: tab, remaining: remaining,
@@ -211,7 +217,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         let ringsKey = rings
             .map { "\($0.id):\(Int($0.remainingPercent.rounded()))" }
             .joined(separator: ",")
-        let cacheKey = "\(settings.displayMode.rawValue)|\(tab.rawValue)|\(valueText)|\(stale)|\(ringsKey)"
+        let cacheKey = "\(settings.displayMode.rawValue)|\(tab.rawValue)|\(valueText)|\(stale)|\(isLive)|\(ringsKey)"
         guard cacheKey != iconCacheKey else { return }
         iconCacheKey = cacheKey
 
@@ -229,10 +235,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
                 button.image = nil
                 setPercentTitle(valueText, on: button)
             case .logoOnly:
-                button.image = IconRenderer.makeLogoIcon(tab: tab)
+                button.image = IconRenderer.makeLogoIcon(tab: tab, lit: isLive)
                 button.title = ""
             case .logoAndPercent:
-                button.image = IconRenderer.makeLogoIcon(tab: tab)
+                button.image = IconRenderer.makeLogoIcon(tab: tab, lit: isLive)
                 setPercentTitle(valueText, on: button)
             case .logoAndRings:
                 button.image = IconRenderer.makeLogoAndRingIcon(tab: tab, rings: rings, stale: stale)
@@ -292,7 +298,8 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         case .grokPool:
             guard let summary = snapshot.plans.first?.grokPool else { return nil }
             return GrokPoolCardView.money(summary.costUSD, symbol: "$")
-        case .ark, .opencode, .zai, .kimi, .longcat, .aliyun, .stepfun, .sensenova:
+        case .ark, .opencode, .zai, .kimi, .longcat, .aliyun, .stepfun, .sensenova,
+             .minimax, .mimo:
             return nil
         }
     }

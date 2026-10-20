@@ -64,6 +64,8 @@ enum PreferencesPane: String, CaseIterable, Identifiable {
     case aliyun
     case stepfun
     case sensenova
+    case minimax
+    case mimo
     case reminder
     case diagnostics
 
@@ -83,6 +85,8 @@ enum PreferencesPane: String, CaseIterable, Identifiable {
         case .aliyun: L(.settingsAliyun)
         case .stepfun: L(.settingsStepFun)
         case .sensenova: L(.settingsSenseNova)
+        case .minimax: L(.settingsMiniMax)
+        case .mimo: L(.settingsMiMo)
         case .reminder: L(.settingsReminder)
         case .diagnostics: L(.settingsDiagnostics)
         }
@@ -102,6 +106,8 @@ enum PreferencesPane: String, CaseIterable, Identifiable {
         case .aliyun: "cloud.fill"
         case .stepfun: "stairs"
         case .sensenova: "sparkle.magnifyingglass"
+        case .minimax: "waveform"
+        case .mimo: "cpu"
         case .reminder: "bell"
         case .diagnostics: "stethoscope"
         }
@@ -122,6 +128,8 @@ enum PreferencesPane: String, CaseIterable, Identifiable {
         case .aliyun: .aliyun
         case .stepfun: .stepfun
         case .sensenova: .sensenova
+        case .minimax: .minimax
+        case .mimo: .mimo
         case .general, .reminder, .diagnostics: nil
         }
     }
@@ -228,6 +236,10 @@ struct PreferencesRootView: View {
             StepFunPreferencesPane(settings: settings, store: store)
         case .sensenova:
             SenseNovaPreferencesPane(settings: settings, store: store)
+        case .minimax:
+            MiniMaxPreferencesPane(settings: settings, store: store)
+        case .mimo:
+            MiMoPreferencesPane(settings: settings, store: store)
         case .reminder:
             ReminderPreferencesPane(settings: settings)
         case .diagnostics:
@@ -1398,6 +1410,157 @@ private struct SenseNovaPreferencesPane: View {
     private func saveManualCookie() {
         settings.setSenseNovaManualCookie(manualCookieField)
         store.refresh(tab: .sensenova)
+    }
+}
+
+private struct MiniMaxPreferencesPane: View {
+    @ObservedObject var settings: AppSettings
+    @ObservedObject var store: UsageStore
+    @State private var apiKeyField: String
+
+    init(settings: AppSettings, store: UsageStore) {
+        self.settings = settings
+        self.store = store
+        _apiKeyField = State(initialValue: settings.miniMaxAPIKey)
+    }
+
+    var body: some View {
+        PreferencesPaneContainer(title: L(.settingsMiniMax), symbol: "waveform", subtitle: L(.settingsMiniMaxSubtitle)) {
+            Form {
+                Section(L(.sectionDisplay)) {
+                    Toggle(L(.showProvider), isOn: Binding(
+                        get: { settings.showMiniMax },
+                        set: { settings.setVisible(.minimax, $0) }))
+                        .toggleStyle(.switch)
+                }
+
+                Section(L(.sectionConnection)) {
+                    HStack(spacing: 8) {
+                        SecureField(L(.miniMaxAPIKeyLabel), text: $apiKeyField)
+                            .onSubmit(saveAPIKey)
+                        Button(L(.saveCredential), action: saveAPIKey)
+                            .buttonStyle(.bordered)
+                    }
+
+                    ProviderStatusRows(
+                        status: store.status(for: .minimax),
+                        isRefreshing: store.isRefreshing(for: .minimax),
+                        lastUpdatedAt: store.lastUpdatedAt(for: .minimax))
+
+                    Label(L(.miniMaxCredentialsHint), systemImage: "key")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                }
+
+                Section(L(.sectionActions)) {
+                    Button {
+                        store.refresh(tab: .minimax)
+                    } label: {
+                        Label(
+                            store.isRefreshing(for: .minimax) ? L(.refreshing) : L(.refreshMiniMax),
+                            systemImage: "arrow.clockwise")
+                    }
+                    Button {
+                        NSWorkspace.shared.open(MiniMaxProvider.consoleURL)
+                    } label: {
+                        Label(L(.openMiniMaxConsole), systemImage: "safari")
+                    }
+                }
+            }
+            .formStyle(.grouped)
+        }
+    }
+
+    private func saveAPIKey() {
+        settings.setMiniMaxAPIKey(apiKeyField)
+        store.refresh(tab: .minimax)
+    }
+}
+
+private struct MiMoPreferencesPane: View {
+    @ObservedObject var settings: AppSettings
+    @ObservedObject var store: UsageStore
+    @State private var manualCookieField: String
+
+    init(settings: AppSettings, store: UsageStore) {
+        self.settings = settings
+        self.store = store
+        _manualCookieField = State(initialValue: settings.miMoManualCookie)
+    }
+
+    var body: some View {
+        PreferencesPaneContainer(title: L(.settingsMiMo), symbol: "cpu", subtitle: L(.settingsMiMoSubtitle)) {
+            Form {
+                Section(L(.sectionDisplay)) {
+                    Toggle(L(.showProvider), isOn: Binding(
+                        get: { settings.showMiMo },
+                        set: { settings.setVisible(.mimo, $0) }))
+                        .toggleStyle(.switch)
+                }
+
+                Section(L(.sectionConnection)) {
+                    HStack(spacing: 8) {
+                        SecureField(L(.miMoManualCookiePlaceholder), text: $manualCookieField)
+                            .onSubmit(saveManualCookie)
+                        Button(L(.saveCookie), action: saveManualCookie)
+                            .buttonStyle(.bordered)
+                    }
+
+                    Button {
+                        store.reimportMiMoBrowserSession()
+                    } label: {
+                        Label(
+                            store.isRefreshing(for: .mimo)
+                                ? L(.refreshingStatus)
+                                : L(.reimportMiMoBrowserSession),
+                            systemImage: "person.crop.circle.badge.arrow.trianglehead.counterclockwise")
+                    }
+                    .disabled(store.isRefreshing(for: .mimo))
+
+                    if let source = MiMoBrowserSession.cachedSession()?.sourceLabel {
+                        Label(String(format: L(.browserSession), source), systemImage: "globe")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                    }
+
+                    ProviderStatusRows(
+                        status: store.status(for: .mimo),
+                        isRefreshing: store.isRefreshing(for: .mimo),
+                        lastUpdatedAt: store.lastUpdatedAt(for: .mimo))
+
+                    Label(L(.miMoCredentialsHint), systemImage: "key")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                }
+
+                Section(L(.sectionActions)) {
+                    Button {
+                        store.refresh(tab: .mimo)
+                    } label: {
+                        Label(
+                            store.isRefreshing(for: .mimo) ? L(.refreshing) : L(.refreshMiMo),
+                            systemImage: "arrow.clockwise")
+                    }
+                    Button {
+                        NSWorkspace.shared.open(MiMoProvider.consoleURL)
+                    } label: {
+                        Label(L(.openMiMoConsole), systemImage: "safari")
+                    }
+                }
+            }
+            .formStyle(.grouped)
+        }
+    }
+
+    private func saveManualCookie() {
+        settings.setMiMoManualCookie(manualCookieField)
+        store.refresh(tab: .mimo)
     }
 }
 

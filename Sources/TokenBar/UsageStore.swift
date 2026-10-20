@@ -204,6 +204,8 @@ final class UsageStore: ObservableObject {
             (settings.$aliyunAccessKeyID.map { _ in () }.eraseToAnyPublisher(), .aliyun),
             (settings.$aliyunSecretAccessKey.map { _ in () }.eraseToAnyPublisher(), .aliyun),
             (settings.$aliyunAPIKey.map { _ in () }.eraseToAnyPublisher(), .aliyun),
+            (settings.$miniMaxAPIKey.map { _ in () }.eraseToAnyPublisher(), .minimax),
+            (settings.$miMoManualCookie.map { _ in () }.eraseToAnyPublisher(), .mimo),
         ]
         for (publisher, tab) in credentialTriggers {
             publisher
@@ -252,6 +254,8 @@ final class UsageStore: ObservableObject {
             case .aliyun: publisher = settings.$showAliyun.eraseToAnyPublisher()
             case .stepfun: publisher = settings.$showStepFun.eraseToAnyPublisher()
             case .sensenova: publisher = settings.$showSenseNova.eraseToAnyPublisher()
+            case .minimax: publisher = settings.$showMiniMax.eraseToAnyPublisher()
+            case .mimo: publisher = settings.$showMiMo.eraseToAnyPublisher()
             }
             publisher
                 .dropFirst()
@@ -348,6 +352,10 @@ final class UsageStore: ObservableObject {
 
         next[.stepfun] = singleTrack(StepFunProvider(settings: settings))
         next[.sensenova] = singleTrack(SenseNovaProvider(settings: settings))
+        next[.minimax] = singleTrack(MiniMaxProvider(settings: settings))
+        next[.mimo] = singleTrack(
+            MiMoProvider(settings: settings),
+            importUnavailableError: L(.errorMiMoBrowserSessionMissing))
 
         tracks = next
     }
@@ -498,6 +506,13 @@ final class UsageStore: ObservableObject {
         let browser = SenseNovaBrowserSession.browserCandidates().first
         reimportBrowserSession(.sensenova) {
             _ = try SenseNovaBrowserSession.importSessionInteractively(from: browser)
+        }
+    }
+
+    func reimportMiMoBrowserSession() {
+        let browser = MiMoBrowserSession.browserCandidates().first
+        reimportBrowserSession(.mimo) {
+            _ = try MiMoBrowserSession.importSessionInteractively(from: browser)
         }
     }
 

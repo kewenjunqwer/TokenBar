@@ -113,6 +113,8 @@ enum LKey: String, CaseIterable {
     case tabAliyun = "tab.aliyun"
     case tabStepFun = "tab.stepfun"
     case tabSenseNova = "tab.sensenova"
+    case tabMiniMax = "tab.minimax"
+    case tabMiMo = "tab.mimo"
     case tabSummary = "tab.summary"
     case showProvider = "settings.showProvider"
     case showSummary = "settings.showSummary"
@@ -136,6 +138,8 @@ enum LKey: String, CaseIterable {
     case settingsAliyun = "settings.aliyun"
     case settingsStepFun = "settings.stepFun"
     case settingsSenseNova = "settings.senseNova"
+    case settingsMiniMax = "settings.minimax"
+    case settingsMiMo = "settings.mimo"
     case settingsReminder = "settings.reminder"
     case settingsGeneralSubtitle = "settings.generalSubtitle"
     case settingsArkSubtitle = "settings.arkSubtitle"
@@ -148,6 +152,8 @@ enum LKey: String, CaseIterable {
     case settingsLongCatSubtitle = "settings.longcatSubtitle"
     case settingsStepFunSubtitle = "settings.stepFunSubtitle"
     case settingsSenseNovaSubtitle = "settings.senseNovaSubtitle"
+    case settingsMiniMaxSubtitle = "settings.minimaxSubtitle"
+    case settingsMiMoSubtitle = "settings.mimoSubtitle"
     case settingsAliyunSubtitle = "settings.aliyunSubtitle"
     case settingsReminderSubtitle = "settings.reminderSubtitle"
     case settingsDiagnosticsSubtitle = "settings.diagnosticsSubtitle"
@@ -169,6 +175,8 @@ enum LKey: String, CaseIterable {
     case refreshAliyun = "settings.refreshAliyun"
     case refreshStepFun = "settings.refreshStepFun"
     case refreshSenseNova = "settings.refreshSenseNova"
+    case refreshMiniMax = "settings.refreshMiniMax"
+    case refreshMiMo = "settings.refreshMiMo"
     case openDeepSeekPlatform = "menu.openDeepSeekPlatform"
     case openNebulaConsole = "menu.openNebulaConsole"
     case openZaiConsole = "menu.openZaiConsole"
@@ -178,6 +186,8 @@ enum LKey: String, CaseIterable {
     case openAliyunConsole = "menu.openAliyunConsole"
     case openStepFunConsole = "menu.openStepFunConsole"
     case openSenseNovaConsole = "menu.openSenseNovaConsole"
+    case openMiniMaxConsole = "menu.openMiniMaxConsole"
+    case openMiMoConsole = "menu.openMiMoConsole"
     case openCodeCookieSource = "settings.openCodeCookieSource"
     case openCodeCookieAutomatic = "settings.openCodeCookieAutomatic"
     case openCodeCookieManual = "settings.openCodeCookieManual"
@@ -187,6 +197,7 @@ enum LKey: String, CaseIterable {
     case reimportBrowserSession = "settings.reimportBrowserSession"
     case reimportStepFunBrowserSession = "settings.reimportStepFunBrowserSession"
     case reimportSenseNovaBrowserSession = "settings.reimportSenseNovaBrowserSession"
+    case reimportMiMoBrowserSession = "settings.reimportMiMoBrowserSession"
     case saveCookie = "settings.saveCookie"
     case lastSuccessfulUpdate = "settings.lastSuccessfulUpdate"
     case noSuccessfulUpdate = "settings.noSuccessfulUpdate"
@@ -215,6 +226,8 @@ enum LKey: String, CaseIterable {
     case productAliyunTokenPlan = "product.aliyunTokenPlan"
     case productStepFunCodingPlan = "product.stepfunCodingPlan"
     case productSenseNovaCodingPlan = "product.sensenovaCodingPlan"
+    case productMiniMax = "product.miniMax"
+    case productMiMo = "product.miMo"
     case windowSession = "window.session"
     case window5Hour = "window.5hour"
     case windowWeekly = "window.weekly"
@@ -324,6 +337,11 @@ enum LKey: String, CaseIterable {
     case errorSenseNovaTokenFailed = "error.senseNovaTokenFailed"
     case errorSenseNovaTokenUnparseable = "error.senseNovaTokenUnparseable"
     case errorSenseNovaTokenMissing = "error.senseNovaTokenMissing"
+    case errorMiniMaxMissingCredentials = "error.miniMaxMissingCredentials"
+    case errorMiniMaxInvalidToken = "error.miniMaxInvalidToken"
+    case errorMiMoMissingCredentials = "error.miMoMissingCredentials"
+    case errorMiMoInvalidSession = "error.miMoInvalidSession"
+    case errorMiMoBrowserSessionMissing = "error.miMoBrowserSessionMissing"
     case errorInsecureEndpoint = "error.insecureEndpoint"
     case errorProbeModels = "error.probeModels"
     case apiKeyNoHeaders = "apiKey.noHeaders"
@@ -363,6 +381,12 @@ enum LKey: String, CaseIterable {
     case senseNovaManualCookiePlaceholder = "sensenova.manualCookiePlaceholder"
     case senseNovaCredentialsHint = "sensenova.credentialsHint"
     case senseNovaAPIKeyLabel = "sensenova.apiKeyLabel"
+
+    // MiniMax (M Plan / Token Plan) + Xiaomi MiMo (Token Plan)
+    case miniMaxAPIKeyLabel = "minimax.apiKeyLabel"
+    case miniMaxCredentialsHint = "minimax.credentialsHint"
+    case miMoManualCookiePlaceholder = "mimo.manualCookiePlaceholder"
+    case miMoCredentialsHint = "mimo.credentialsHint"
 
     // Subscription expiry reminders
     case reminderHeader = "reminder.header"
@@ -481,6 +505,8 @@ final class L10n: ObservableObject {
         case .aliyunTokenPlan: t(.productAliyunTokenPlan)
         case .stepfunCodingPlan: t(.productStepFunCodingPlan)
         case .senseNovaCodingPlan: t(.productSenseNovaCodingPlan)
+        case .miniMax: t(.productMiniMax)
+        case .miMo: t(.productMiMo)
         }
     }
 
@@ -602,6 +628,8 @@ final class L10n: ObservableObject {
         add(.tabAliyun, "阿里云", "Alibaba Cloud")
         add(.tabStepFun, "阶跃", "StepFun")
         add(.tabSenseNova, "商汤", "SenseNova")
+        add(.tabMiniMax, "MiniMax", "MiniMax")
+        add(.tabMiMo, "小米 MiMo", "Xiaomi MiMo")
         add(.tabSummary, "概览", "Overview")
         add(.showSummary, "在菜单栏显示概览", "Show overview in menu bar")
         add(.showProvider, "在菜单栏显示", "Show in menu bar")
@@ -625,6 +653,8 @@ final class L10n: ObservableObject {
         add(.settingsAliyun, "阿里云百炼", "Alibaba Cloud Bailian")
         add(.settingsStepFun, "阶跃 Step Plan", "StepFun Step Plan")
         add(.settingsSenseNova, "商汤 Token Plan", "SenseNova Token Plan")
+        add(.settingsMiniMax, "MiniMax Token Plan", "MiniMax Token Plan")
+        add(.settingsMiMo, "小米 MiMo Token Plan", "Xiaomi MiMo Token Plan")
         add(.settingsReminder, "订阅提醒", "Expiry Reminders")
         add(.settingsGeneralSubtitle, "外观、刷新、语言与操作", "Appearance, refresh, language, and actions")
         add(.settingsArkSubtitle, "火山方舟 Coding / Agent 套餐用量", "Volcengine Ark Coding / Agent plan usage")
@@ -637,6 +667,8 @@ final class L10n: ObservableObject {
         add(.settingsLongCatSubtitle, "Token 资源包剩余额度", "Token package remaining quota")
         add(.settingsStepFunSubtitle, "Step Plan 月度 Credit 额度", "Step Plan monthly credit quota")
         add(.settingsSenseNovaSubtitle, "日日新 Token Plan（公测免费：60,000 积分/5 小时）", "SenseNova Token Plan (free beta: 60,000 credits / 5 hours)")
+        add(.settingsMiniMaxSubtitle, "M Plan / Token Plan（5 小时 + 每周额度，官方 API Key 查询，不会过期）", "M Plan / Token Plan (5-hour + weekly quota, read through the official API key endpoint — never expires)")
+        add(.settingsMiMoSubtitle, "小米 MiMo 编程套餐（按月 Credits 配额，控制台会话查询）", "Xiaomi MiMo Token Plan (monthly credit quota, read through the console session)")
         add(.settingsAliyunSubtitle, "百炼 Coding Plan / Token Plan 用量", "Bailian Coding Plan / Token Plan usage")
         add(.settingsReminderSubtitle, "快到期且额度没用完时提醒你", "Nudges you when a plan expires with quota left")
         add(.settingsDiagnosticsSubtitle, "运行环境与 arkcli 检查", "Runtime environment and arkcli checks")
@@ -658,6 +690,8 @@ final class L10n: ObservableObject {
         add(.refreshAliyun, "刷新阿里云", "Refresh Alibaba Cloud")
         add(.refreshStepFun, "刷新阶跃", "Refresh StepFun")
         add(.refreshSenseNova, "刷新商汤", "Refresh SenseNova")
+        add(.refreshMiniMax, "刷新 MiniMax", "Refresh MiniMax")
+        add(.refreshMiMo, "刷新小米 MiMo", "Refresh Xiaomi MiMo")
         add(.openDeepSeekPlatform, "打开 DeepSeek 平台", "Open DeepSeek Platform")
         add(.openNebulaConsole, "打开 APINebula 控制台", "Open APINebula Console")
         add(.openZaiConsole, "打开智谱用量页", "Open Z.ai Usage")
@@ -667,6 +701,8 @@ final class L10n: ObservableObject {
         add(.openAliyunConsole, "打开百炼控制台", "Open Bailian Console")
         add(.openStepFunConsole, "打开阶跃控制台", "Open StepFun Console")
         add(.openSenseNovaConsole, "打开商汤控制台", "Open SenseNova Console")
+        add(.openMiniMaxConsole, "打开 MiniMax 控制台", "Open MiniMax Console")
+        add(.openMiMoConsole, "打开小米 MiMo 控制台", "Open Xiaomi MiMo Console")
         add(.openCodeCookieSource, "Cookie 来源", "Cookie source")
         add(.openCodeCookieAutomatic, "自动读取浏览器", "Automatic from browser")
         add(.openCodeCookieManual, "手动 Cookie", "Manual Cookie")
@@ -676,6 +712,7 @@ final class L10n: ObservableObject {
         add(.reimportBrowserSession, "重新读取浏览器登录", "Re-import Browser Session")
         add(.reimportStepFunBrowserSession, "重新读取浏览器登录", "Re-import Browser Sign-in")
         add(.reimportSenseNovaBrowserSession, "重新读取浏览器登录", "Re-import Browser Sign-in")
+        add(.reimportMiMoBrowserSession, "重新读取浏览器登录", "Re-import Browser Sign-in")
         add(.saveCookie, "保存 Cookie", "Save Cookie")
         add(.lastSuccessfulUpdate, "上次成功更新", "Last successful update")
         add(.noSuccessfulUpdate, "尚未成功更新", "No successful update yet")
@@ -704,6 +741,8 @@ final class L10n: ObservableObject {
         add(.productAliyunTokenPlan, "阿里云 Token Plan", "Alibaba Cloud Token Plan")
         add(.productStepFunCodingPlan, "阶跃 Step Plan", "StepFun Step Plan")
         add(.productSenseNovaCodingPlan, "商汤 Token Plan", "SenseNova Token Plan")
+        add(.productMiniMax, "MiniMax Token Plan", "MiniMax Token Plan")
+        add(.productMiMo, "MiMo Token Plan", "MiMo Token Plan")
         add(.windowSession, "会话", "Session")
         add(.window5Hour, "5 小时", "5-hour")
         add(.windowWeekly, "每周", "Weekly")
@@ -828,6 +867,11 @@ final class L10n: ObservableObject {
         add(.errorSenseNovaTokenFailed, "商汤令牌换取失败（HTTP %d）：%@", "SenseNova token exchange failed (HTTP %d): %@")
         add(.errorSenseNovaTokenUnparseable, "商汤令牌响应无法解析。", "The SenseNova token response could not be parsed.")
         add(.errorSenseNovaTokenMissing, "商汤令牌响应缺少 access_token。", "The SenseNova token response carried no access_token.")
+        add(.errorMiniMaxMissingCredentials, "未找到 MiniMax API Key。请在“设置 → MiniMax Token Plan”填写，或设置环境变量 MINIMAX_API_KEY。", "No MiniMax API key. Enter one in “Settings → MiniMax Token Plan”, or set the MINIMAX_API_KEY environment variable.")
+        add(.errorMiniMaxInvalidToken, "MiniMax 拒绝了该 API Key（请检查套餐密钥 sk-cp-… 是否有效）。", "MiniMax rejected the API key (check that the plan key sk-cp-… is valid).")
+        add(.errorMiMoMissingCredentials, "未找到小米 MiMo 控制台会话。请在浏览器登录 platform.xiaomimimo.com 后点“重新读取浏览器登录”。", "No Xiaomi MiMo console session. Sign in to platform.xiaomimimo.com in a browser, then click “Re-import Browser Sign-in”.")
+        add(.errorMiMoInvalidSession, "小米 MiMo 会话已过期，且无法从浏览器自动续期，请重新登录控制台后点“重新读取浏览器登录”。", "The Xiaomi MiMo session expired and could not be renewed from the browser. Sign in to the console again, then click “Re-import Browser Sign-in”.")
+        add(.errorMiMoBrowserSessionMissing, "浏览器中没有小米 MiMo 的登录态。请先在浏览器登录 platform.xiaomimimo.com。", "No Xiaomi MiMo sign-in was found in the browser. Sign in to platform.xiaomimimo.com first.")
         add(.errorInsecureEndpoint, "自定义地址不安全：%@。凭据会发送到该地址，因此只允许 HTTPS（本地 http://localhost 例外）。", "Insecure custom endpoint: %@. Credentials are sent to this address, so only HTTPS is allowed (http://localhost is exempt).")
         add(.errorProbeModels, "所有探测模型均不可用", "All probe models failed")
         add(.apiKeyNoHeaders, "API Key 有效，但响应未返回请求限额头。", "API key is valid, but no request-limit headers were returned.")
@@ -845,6 +889,10 @@ final class L10n: ObservableObject {
         add(.aliyunTokenHint, "访问令牌只在内存中缓存（约 10 分钟），过期自动重换，不会写入磁盘；sk-sp- 套餐 Key 主要用于模型调用，这里只作为兜底尝试。", "The console token is cached in memory only (~10 minutes) and re-minted automatically when it expires; it is never written to disk. The sk-sp- plan key authenticates model calls and is only tried here as a last resort.")
         add(.senseNovaCredentialsHint, "在浏览器登录 https://platform.sensenova.cn/console 后，点“重新读取浏览器登录”导入控制台会话（存 Keychain）；读取浏览器 Cookie 需要 TokenBar 拥有完全磁盘访问权限。Token Plan 的额度接口官方未公开，App 正在通过探测确定接口（探测响应写入资源库 TokenBar/sensenova-last-response.txt）。", "Sign in to https://platform.sensenova.cn/console in a browser, then click “Re-import Browser Sign-in” to capture the console session (stored in Keychain). Reading browser cookies requires Full Disk Access. The Token Plan quota API is not publicly documented; TokenBar probes the candidate endpoints to confirm it (probe responses are written to Application Support/TokenBar/sensenova-last-response.txt).")
         add(.senseNovaAPIKeyLabel, "API Key（Bearer）", "API Key (Bearer)")
+        add(.miniMaxAPIKeyLabel, "API Key（sk-cp-… 套餐密钥）", "API Key (sk-cp-… plan key)")
+        add(.miniMaxCredentialsHint, "在 platform.minimax.cn/console/plan 开通 M Plan 后复制 API Key 填在这里；官方接口 GET /v1/token_plan/remains 直接返回 5 小时与每周的剩余额度，凭据长期有效，不需要反复登录。", "Copy the API key of your M Plan from platform.minimax.cn/console/plan. The official GET /v1/token_plan/remains endpoint returns the remaining 5-hour and weekly allowance; the credential never expires, so there is no repeated sign-in.")
+        add(.miMoManualCookiePlaceholder, "手动粘贴 Cookie（api-platform_serviceToken、userId）", "Paste Cookie (api-platform_serviceToken, userId)")
+        add(.miMoCredentialsHint, "小米 MiMo 的额度只对已登录的控制台开放，官方没有配额 API。App 会读取浏览器中的登录态（存 Keychain）并在你登录后自动续期；读取浏览器 Cookie 需要 TokenBar 拥有完全磁盘访问权限。", "Xiaomi MiMo publishes no quota API — the quota is only visible in the signed-in console. TokenBar reads the browser sign-in (stored in Keychain) and renews it while the browser session is alive; reading browser cookies requires Full Disk Access.")
         add(.stepFunCredentialsHint, "在浏览器登录 https://platform.stepfun.com 后，点“重新读取浏览器登录”导入控制台会话（存 Keychain，自动续期）。阶跃的套餐额度只认控制台会话——API Key 只能调模型、读不了额度（已实测确认），所以 API Key 栏对查用量无效，可留空。", "Sign in to https://platform.stepfun.com in a browser, then click “Re-import Browser Sign-in” to capture the console session (stored in Keychain, auto-rotated). StepFun plan quota is console-session only — API keys can call models but cannot read quota (verified), so the API-key field is not needed for usage tracking.")
         add(.stepFunAPIKeyLabel, "API Key（Bearer）", "API Key (Bearer)")
         add(.stepFunManualCookiePlaceholder, "手动 Cookie（可选，从浏览器 DevTools 复制）", "Manual Cookie (optional; copy from browser devtools)")

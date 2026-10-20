@@ -16,6 +16,8 @@ enum ProviderTab: String, CaseIterable, Sendable {
     case aliyun
     case stepfun
     case sensenova
+    case minimax
+    case mimo
 
     var displayName: String {
         switch self {
@@ -30,6 +32,8 @@ enum ProviderTab: String, CaseIterable, Sendable {
         case .aliyun: L(.tabAliyun)
         case .stepfun: L(.tabStepFun)
         case .sensenova: L(.tabSenseNova)
+        case .minimax: L(.tabMiniMax)
+        case .mimo: L(.tabMiMo)
         }
     }
 }
